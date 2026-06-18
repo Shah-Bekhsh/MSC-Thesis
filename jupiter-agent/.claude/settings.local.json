@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(wsl -- bash -c \"cd /home/shabe/Thesis/jupiter-agent && uv sync 2>&1\")",
+      "PowerShell(wsl bash -c \"cd /home/shabe/Thesis/jupiter-agent && .venv/bin/python -c 'import ollama, anthropic; import src.pg_mcp.client; print\\(chr\\(79\\)+chr\\(75\\)+chr\\(58\\)+chr\\(32\\)+ollama.__version__+chr\\(32\\)+anthropic.__version__\\)'\")",
+      "PowerShell(wsl bash -c \"cd /home/shabe/Thesis/jupiter-agent && .venv/bin/python -c 'import ollama, anthropic; import src.pg_mcp.client; print\\(chr\\(73\\)+chr\\(77\\)+chr\\(80\\)+chr\\(79\\)+chr\\(82\\)+chr\\(84\\)+chr\\(83\\)+chr\\(32\\)+chr\\(79\\)+chr\\(75\\)\\)'\")",
+      "PowerShell(wsl bash -c \"ollama list\")",
+      "PowerShell(wsl bash -c \"curl -s http://localhost:11434/api/tags | head -c 500; echo; echo '---'; curl -s http://localhost:11434/api/generate -d '{\\\\\"model\\\\\": \\\\\"deepseek-r1:8b\\\\\", \\\\\"prompt\\\\\": \\\\\"Say OK and nothing else\\\\\", \\\\\"stream\\\\\": false}' | head -c 800\")",
+      "Bash(curl *)"
+    ]
+  }
+}

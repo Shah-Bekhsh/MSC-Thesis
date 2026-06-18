@@ -1,0 +1,176 @@
+from mcp.server.fastmcp import FastMCP
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+import src.pg_mcp.database as db
+from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+import httpx
+
+load_dotenv()
+
+pool = None
+
+
+@asynccontextmanager
+async def lifespan(app):
+    global pool
+    pool = await db.get_pool()
+    yield
+    await pool.close()
+
+
+mcp = FastMCP("jupiter-mcp", lifespan=lifespan)
+
+
+@mcp.tool()
+async def geocode_address(address: str) -> dict:
+    """Convert a Danish address string to UTM32 EUREF89 (EPSG:25832) coordinates.
+    Call this whenever the user provides an address instead of coordinates.
+    Returns address, x_utm32 (easting), and y_utm32 (northing)."""
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            "https://api.dataforsyningen.dk/adresser",
+            params={"q": address, "format": "json"},
+            timeout=10.0,
+        )
+        r.raise_for_status()
+        data = r.json()
+    if not data:
+        return {"error": f"No address found for: {address}"}
+    hit = data[0]
+    etrs = hit.get("adgangsadresse", {}).get("etrs89koordinat", {})
+    x = etrs.get("øst")
+    y = etrs.get("nord")
+    if x is None or y is None:
+        return {"error": "Could not extract UTM32 coordinates from DAWA response", "raw": hit}
+    return {
+        "address": hit.get("adressebetegnelse", address),
+        "x_utm32": x,
+        "y_utm32": y,
+    }
+
+
+@mcp.tool()
+async def find_supply_plant(x_utm32: float, y_utm32: float) -> list[dict]:
+    """Find the drinking water plant(s) supplying a location.
+    Input: UTM32 EUREF89 (EPSG:25832) coordinates.
+    Always call geocode_address first when the user provides an address.
+    Returns list of plants with plantid, name, address, watertype, and active status."""
+    query = """
+        SELECT wp.plantid, p.plantname, p.plantaddress, p.plantpostalcode,
+               p.watertype, p.active
+        FROM pcjupiterxlplusviews.wsa w
+        JOIN pcjupiterxlplusviews.wsa_plant wp ON wp.wsaid = w.wsaid
+        JOIN pcjupiterxlplusviews.drwplant p ON p.plantid = wp.plantid
+        WHERE ST_Contains(w.geom, ST_SetSRID(ST_MakePoint($1, $2), 25832))
+        AND w.end = 2019
+        AND (p.active != 2 OR p.active IS NULL)
+    """
+    return await db.fetch_all(pool, query, x_utm32, y_utm32)
+
+
+@mcp.tool()
+async def search_compound(name: str) -> list[dict]:
+    """Resolve a chemical name (English or Danish) to Jupiter compound number(s).
+    Always call this before any chemistry query — never hardcode compound IDs.
+    Compound names in Jupiter are Danish (e.g. 'Nitrat', 'Perfluorerede stoffer').
+    Wildcards (%) are added automatically if omitted."""
+    if "%" not in name:
+        name = f"%{name}%"
+    query = """
+        SELECT compoundno, long_text, short_text, casno, grwunit, drwunit
+        FROM pcjupiterxlplusviews.compoundlist
+        WHERE long_text ILIKE $1 OR short_text ILIKE $1
+        ORDER BY long_text
+        LIMIT 20
+    """
+    return await db.fetch_all(pool, query, name)
+
+
+@mcp.tool()
+async def get_compound_group(group_name: str) -> list[dict]:
+    """Get all compound IDs belonging to a named compound group.
+    Critical for PFAS queries — use group_name='Perfluorerede stoffer' for all PFAS compounds.
+    Wildcards (%) are added automatically if omitted."""
+    if "%" not in group_name:
+        group_name = f"%{group_name}%"
+    query = """
+        SELECT c.compoundno, c.long_text, c.short_text
+        FROM pcjupiterxlplusviews.compoundlist c
+        JOIN pcjupiterxlplusviews.compoundgroup cg ON cg.compoundno = c.compoundno
+        JOIN pcjupiterxlplusviews.compoundgrouplist cgl ON cgl.compoundgroupno = cg.compoundgroupno
+        WHERE cgl.longtext ILIKE $1
+        ORDER BY c.long_text
+    """
+    return await db.fetch_all(pool, query, group_name)
+
+
+@mcp.tool()
+async def get_water_quality(plantid: int, compoundno: int, limit: int = 20) -> list[dict]:
+    """Get recent chemistry measurements at a drinking water plant.
+    Applies all Jupiter quality filters (qualitycontrol, samplestatus, project, date).
+    Returns measurements with dates, amounts, units, legal limits, and a status flag:
+      OK — measurement within legal limit
+      EXCEEDS_LIMIT — amount exceeds consumer_max
+      NOT_DETECTED — attribute field is non-null (below detection, flagged, or estimated)
+      UNIT_MISMATCH — cannot compare due to differing units"""
+    query = """
+        SELECT
+            p.plantname, p.plantaddress,
+            s.sampledate,
+            a.amount,
+            u.longtext AS unit,
+            c.long_text AS compound,
+            a.attribute,
+            a.detectionlimit,
+            l.consumer_max AS legal_limit,
+            lu.longtext AS limit_unit,
+            CASE
+                WHEN a.attribute IS NOT NULL THEN 'NOT_DETECTED'
+                WHEN l.consumer_max IS NOT NULL AND a.unit = l.unit
+                     AND a.amount > l.consumer_max THEN 'EXCEEDS_LIMIT'
+                WHEN l.consumer_max IS NOT NULL AND a.unit != l.unit THEN 'UNIT_MISMATCH'
+                ELSE 'OK'
+            END AS status
+        FROM pcjupiterxlplusviews.drwplant p
+        JOIN pcjupiterxlplusviews.pltchemsample s ON s.plantid = p.plantid
+        JOIN pcjupiterxlplusviews.pltchemanalysis a ON a.sampleid = s.sampleid
+        JOIN pcjupiterxlplusviews.compoundlist c ON c.compoundno = a.compoundno
+        JOIN pcjupiterxlplusviews.code_752 u ON u.code = a.unit
+        LEFT JOIN pcjupiterxlplusviews.limitlist l ON l.compoundno = a.compoundno
+        LEFT JOIN pcjupiterxlplusviews.code_752 lu ON lu.code = l.unit
+        WHERE p.plantid = $1
+        AND a.compoundno = $2
+        AND (a.qualitycontrol IS NULL OR a.qualitycontrol NOT IN (4,5,6,8,12,13,14,15))
+        AND (s.samplestatus IS NULL OR s.samplestatus IN (2,4,6,8,10,14))
+        AND (s.project IS NULL OR s.project = 'DRV')
+        AND s.sampledate <= NOW()
+        ORDER BY s.sampledate DESC
+        LIMIT $3
+    """
+    return await db.fetch_all(pool, query, plantid, compoundno, limit)
+
+
+@mcp.tool()
+async def get_legal_limit(compoundno: int) -> dict:
+    """Get the official Danish drinking water limit for a compound.
+    Returns consumer_min, consumer_max, waterworks_max, and unit.
+    Returns an empty dict if no legal limit exists for the compound."""
+    query = """
+        SELECT
+            c.long_text AS compound,
+            l.consumer_min,
+            l.consumer_max,
+            l.waterworks_max,
+            u.longtext AS unit
+        FROM pcjupiterxlplusviews.limitlist l
+        JOIN pcjupiterxlplusviews.compoundlist c ON c.compoundno = l.compoundno
+        JOIN pcjupiterxlplusviews.code_752 u ON u.code = l.unit
+        WHERE l.compoundno = $1
+    """
+    return await db.fetch_one(pool, query, compoundno) or {}
+
+
+if __name__ == "__main__":
+    mcp.run()

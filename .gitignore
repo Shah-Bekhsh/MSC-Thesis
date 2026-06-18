@@ -1,0 +1,23 @@
+# Database backups and raw data — too large for git
+data/
+
+# Environment files with secrets
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.uv/
+
+# OS / editor junk
+.DS_Store
+*.Zone.Identifier
+.vscode/
+.idea/
+
+# Logs
+*.log
