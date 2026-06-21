@@ -18,6 +18,7 @@ Current date 8/6/2026
 - [X] MCP tool: get legal limit -- Get the official Danish drinking water limit for a compound.
 - [X] Report writing: Introduction Section: Draft introduction 
 - [ ] Claude API Rate limitation: Bring back local model (until new claude subscription) 
+- [ ] Add groundwater 
 - [ ] Report writing: Problem + Data description (finish by 10/6/26)
 - [ ] Report writing: Architecture + Implementation (finish by 14/6/26)
 - [ ] Code evaluation analysis: run the SQL's by Bjarni & Charlotte to confirm LLM performance 

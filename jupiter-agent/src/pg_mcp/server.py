@@ -1,6 +1,7 @@
 from mcp.server.fastmcp import FastMCP
 import sys
 import os
+import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 import src.pg_mcp.database as db
 from contextlib import asynccontextmanager
@@ -106,15 +107,7 @@ async def get_compound_group(group_name: str) -> list[dict]:
     return await db.fetch_all(pool, query, group_name)
 
 
-@mcp.tool()
-async def get_water_quality(plantid: int, compoundno: int, limit: int = 20) -> list[dict]:
-    """Get recent chemistry measurements at a drinking water plant.
-    Applies all Jupiter quality filters (qualitycontrol, samplestatus, project, date).
-    Returns measurements with dates, amounts, units, legal limits, and a status flag:
-      OK — measurement within legal limit
-      EXCEEDS_LIMIT — amount exceeds consumer_max
-      NOT_DETECTED — attribute field is non-null (below detection, flagged, or estimated)
-      UNIT_MISMATCH — cannot compare due to differing units"""
+async def _tap_water_quality(plantid: int, compoundno: int, limit: int = 20) -> list[dict]:
     query = """
         SELECT
             p.plantname, p.plantaddress,
@@ -153,6 +146,18 @@ async def get_water_quality(plantid: int, compoundno: int, limit: int = 20) -> l
 
 
 @mcp.tool()
+async def get_water_quality(plantid: int, compoundno: int, limit: int = 20) -> list[dict]:
+    """Get recent chemistry measurements at a drinking water plant (treated/tap water).
+    Applies all Jupiter quality filters (qualitycontrol, samplestatus, project, date).
+    Returns measurements with dates, amounts, units, legal limits, and a status flag:
+      OK — measurement within legal limit
+      EXCEEDS_LIMIT — amount exceeds consumer_max
+      NOT_DETECTED — attribute field is non-null (below detection, flagged, or estimated)
+      UNIT_MISMATCH — cannot compare due to differing units"""
+    return await _tap_water_quality(plantid, compoundno, limit)
+
+
+@mcp.tool()
 async def get_legal_limit(compoundno: int) -> dict:
     """Get the official Danish drinking water limit for a compound.
     Returns consumer_min, consumer_max, waterworks_max, and unit.
@@ -170,6 +175,173 @@ async def get_legal_limit(compoundno: int) -> dict:
         WHERE l.compoundno = $1
     """
     return await db.fetch_one(pool, query, compoundno) or {}
+
+async def _source_water_quality(plantid: int, compoundno: int) -> dict:
+    """Source groundwater chemistry for all active-abstraction boreholes feeding a plant.
+    Returns per-borehole detail plus a plant-level summary. Active intakes only
+    (intakeusage 1=Indvinding, 3=Indvinding og monitering)."""
+    query = """
+        WITH source_boreholes AS (
+            SELECT DISTINCT dpi.boreholeid
+            FROM pcjupiterxlplusviews.drwplantintake dpi
+            WHERE dpi.plantid = $1
+            AND dpi.intakeusage IN (1, 3)
+        )
+        SELECT
+            b.boreholeno,
+            s.sampledate,
+            a.amount,
+            u.longtext AS unit,
+            a.attribute,
+            a.detectionlimit
+        FROM source_boreholes sb
+        JOIN pcjupiterxlplusviews.borehole b ON b.boreholeid = sb.boreholeid
+        JOIN pcjupiterxlplusviews.grwchemsample s ON s.boreholeid = sb.boreholeid
+        JOIN pcjupiterxlplusviews.grwchemanalysis a ON a.sampleid = s.sampleid
+        JOIN pcjupiterxlplusviews.code_752 u ON u.code = a.unit
+        WHERE a.compoundno = $2
+        AND (a.qualitycontrol IS NULL OR a.qualitycontrol NOT IN (4,5,6,8,12,13,14,15))
+        AND (s.samplestatus IS NULL OR s.samplestatus IN (2,4,6,8,10,14))
+        AND s.sampledate <= NOW()
+        ORDER BY b.boreholeno, s.sampledate DESC
+    """
+    rows = await db.fetch_all(pool, query, plantid, compoundno)
+
+    if not rows:
+        return {
+            "plantid": plantid,
+            "compoundno": compoundno,
+            "found": False,
+            "note": ("No source-water measurements found for active abstraction "
+                     "intakes (intakeusage 1 or 3) feeding this plant. The plant's "
+                     "source boreholes may be unmonitored for this compound, or its "
+                     "intake linkage may only record decommissioned boreholes."),
+        }
+
+    by_borehole: dict[str, list[dict]] = {}
+    for r in rows:
+        by_borehole.setdefault(r["boreholeno"], []).append(r)
+
+    boreholes_out = []
+    numeric_amounts: list[float] = []
+    all_dates: list[str] = []
+    flagged_count = 0
+    unit = None
+
+    for bn, measurements in by_borehole.items():
+        latest = measurements[0]  # already sorted desc by date
+        if unit is None and latest.get("unit"):
+            unit = latest["unit"]
+        series = []
+        for m in measurements:
+            if m["sampledate"]:
+                all_dates.append(m["sampledate"])
+            if m["attribute"] is None and m["amount"] is not None:
+                numeric_amounts.append(m["amount"])
+            else:
+                flagged_count += 1
+            series.append({
+                "sampledate": m["sampledate"],
+                "amount": m["amount"],
+                "unit": m["unit"],
+                "attribute": m["attribute"],
+                "detectionlimit": m["detectionlimit"],
+            })
+        boreholes_out.append({
+            "boreholeno": bn,
+            "n_measurements": len(measurements),
+            "latest": {
+                "sampledate": latest["sampledate"],
+                "amount": latest["amount"],
+                "unit": latest["unit"],
+                "attribute": latest["attribute"],
+            },
+            "series": series,
+        })
+
+    latest_date = max(all_dates) if all_dates else None
+    earliest_date = min(all_dates) if all_dates else None
+
+    age_warning = None
+    if latest_date:
+        try:
+            latest_dt = datetime.datetime.fromisoformat(latest_date)
+            years = (datetime.datetime.now() - latest_dt).days / 365.25
+            if years > 2:
+                age_warning = (
+                    f"Most recent source-water measurement is from {latest_date[:10]} "
+                    f"(~{years:.0f} years ago). Source groundwater is sampled less often "
+                    f"than treated water and may not reflect current source conditions."
+                )
+        except (ValueError, TypeError):
+            pass
+
+    summary = {
+        "n_boreholes": len(boreholes_out),
+        "n_measurements": len(rows),
+        "n_flagged": flagged_count,
+        "unit": unit,
+        "earliest": earliest_date,
+        "latest": latest_date,
+        "data_age_warning": age_warning,
+    }
+    if numeric_amounts:
+        summary["min_amount"] = min(numeric_amounts)
+        summary["max_amount"] = max(numeric_amounts)
+        summary["avg_amount"] = round(sum(numeric_amounts) / len(numeric_amounts), 3)
+
+    return {
+        "plantid": plantid,
+        "compoundno": compoundno,
+        "found": True,
+        "summary": summary,
+        "per_borehole": boreholes_out,
+    }
+
+
+@mcp.tool()
+async def get_source_water_quality(plantid: int, compoundno: int) -> dict:
+    """Get the SOURCE groundwater chemistry for the boreholes feeding a drinking water plant.
+    This is the raw, untreated water at the abstraction boreholes — distinct from the
+    treated tap water returned by get_water_quality.
+    Only includes active abstraction intakes (intakeusage 1 or 3); decommissioned
+    boreholes are excluded.
+    Returns a plant-level summary (min/max/avg across boreholes, date range, and a
+    data-age warning if the latest source sample is old) plus per-borehole detail with
+    the latest value and full historical series for each borehole."""
+    return await _source_water_quality(plantid, compoundno)
+
+
+@mcp.tool()
+async def compare_source_to_tap(plantid: int, compoundno: int) -> dict:
+    """Compare SOURCE groundwater chemistry against TREATED tap water for a plant.
+    Returns both datasets side by side along with structured caveats.
+    IMPORTANT: this tool deliberately does NOT compute a single treatment-efficiency
+    percentage. Source values are per-borehole raw groundwater (often sampled in
+    different years), while tap values are the blended, treated plant output. A naive
+    subtraction would be scientifically misleading. Present the comparison qualitatively,
+    surfacing the caveats to the user."""
+    source = await _source_water_quality(plantid, compoundno)
+    tap = await _tap_water_quality(plantid, compoundno, limit=20)
+
+    caveats = [
+        ("Source values are per-borehole raw groundwater; tap values are the blended, "
+         "treated output of the plant. They are not directly subtractable."),
+        ("Source groundwater is typically sampled far less frequently than treated water, "
+         "so the two datasets may cover different time periods."),
+        ("No single treatment-efficiency percentage is provided because date ranges and "
+         "blending differ. Interpret the comparison qualitatively."),
+    ]
+
+    return {
+        "plantid": plantid,
+        "compoundno": compoundno,
+        "source": source,
+        "tap": tap,
+        "tap_latest": tap[0]["sampledate"] if tap else None,
+        "source_latest": source.get("summary", {}).get("latest") if source.get("found") else None,
+        "caveats": caveats,
+    }
 
 
 if __name__ == "__main__":
