@@ -312,6 +312,135 @@ async def get_source_water_quality(plantid: int, compoundno: int) -> dict:
     return await _source_water_quality(plantid, compoundno)
 
 
+async def _water_level(plantid: int) -> dict:
+    """Resting groundwater levels at the active abstraction boreholes feeding a plant.
+    Reports both elevation (m above mean sea level) and depth below ground surface.
+    Uses resting measurements only (situation = 0) and excludes rejected QC rows."""
+    query = """
+        WITH source_boreholes AS (
+            SELECT DISTINCT dpi.boreholeid
+            FROM pcjupiterxlplusviews.drwplantintake dpi
+            WHERE dpi.plantid = $1 AND dpi.intakeusage IN (1, 3)
+        )
+        SELECT
+            b.boreholeno,
+            w.intakeno,
+            w.timeofmeas,
+            w.watlevmsl,      -- elevation, m above mean sea level (DVR90)
+            w.watlevgrsu      -- depth below ground surface, m
+        FROM source_boreholes sb
+        JOIN pcjupiterxlplusviews.borehole b ON b.boreholeid = sb.boreholeid
+        JOIN pcjupiterxlplusviews.watlevel w ON w.boreholeid = sb.boreholeid
+        WHERE w.situation = 0
+          AND (w.qualitycontrol IS NULL OR w.qualitycontrol NOT IN (4, 5))
+          AND w.watlevmsl IS NOT NULL
+          AND w.timeofmeas <= NOW()
+        ORDER BY b.boreholeno, w.intakeno, w.timeofmeas DESC
+    """
+    rows = await db.fetch_all(pool, query, plantid)
+
+    if not rows:
+        return {
+            "plantid": plantid,
+            "found": False,
+            "note": ("No resting water-level measurements were found for the active "
+                     "abstraction boreholes feeding this plant."),
+        }
+
+    # Group by (borehole, intake)
+    by_key: dict[tuple, list[dict]] = {}
+    for r in rows:
+        key = (r["boreholeno"], r["intakeno"])
+        by_key.setdefault(key, []).append(r)
+
+    boreholes_out = []
+    all_msl: list[float] = []
+    all_dates: list[str] = []
+
+    for (bn, intk), measurements in by_key.items():
+        latest = measurements[0]  # sorted desc by date
+        series = []
+        for m in measurements:
+            if m["timeofmeas"]:
+                all_dates.append(m["timeofmeas"])
+            if m["watlevmsl"] is not None:
+                all_msl.append(m["watlevmsl"])
+            series.append({
+                "date": m["timeofmeas"],
+                "elevation_m_msl": m["watlevmsl"],
+                "depth_below_ground_m": m["watlevgrsu"],
+            })
+        boreholes_out.append({
+            "boreholeno": bn,
+            "intakeno": intk,
+            "n_measurements": len(measurements),
+            "latest": {
+                "date": latest["timeofmeas"],
+                "elevation_m_msl": latest["watlevmsl"],
+                "depth_below_ground_m": latest["watlevgrsu"],
+            },
+            "series": series,
+        })
+
+    latest_date = max(all_dates) if all_dates else None
+    earliest_date = min(all_dates) if all_dates else None
+
+    age_warning = None
+    if latest_date:
+        try:
+            latest_dt = datetime.datetime.fromisoformat(latest_date)
+            years = (datetime.datetime.now() - latest_dt).days / 365.25
+            if years > 2:
+                age_warning = (
+                    f"Most recent resting water-level measurement is from "
+                    f"{latest_date[:10]} (~{years:.0f} years ago)."
+                )
+        except (ValueError, TypeError):
+            pass
+
+    summary = {
+        "n_boreholes": len({k[0] for k in by_key}),
+        "n_intakes": len(by_key),
+        "n_measurements": len(rows),
+        "earliest": earliest_date,
+        "latest": latest_date,
+        "data_age_warning": age_warning,
+    }
+    if all_msl:
+        summary["min_elevation_m_msl"] = min(all_msl)
+        summary["max_elevation_m_msl"] = max(all_msl)
+        summary["latest_elevation_m_msl"] = boreholes_out[0]["latest"]["elevation_m_msl"]
+        summary["elevation_range_m"] = round(max(all_msl) - min(all_msl), 2)
+
+    return {
+        "plantid": plantid,
+        "found": True,
+        "convention_note": (
+            "Elevation is metres relative to mean sea level (DVR90); higher = "
+            "higher water table. Depth below ground is metres from the terrain "
+            "surface down to the water; larger = deeper water table. Resting "
+            "measurements only (situation=0); operational/pumped readings excluded."
+        ),
+        "summary": summary,
+        "per_borehole": boreholes_out,
+    }
+
+
+@mcp.tool()
+async def get_water_level(plantid: int) -> dict:
+    """Get the groundwater LEVEL (water table) at the boreholes feeding a drinking
+    water plant. This is the height of the water table, NOT water chemistry.
+    Reports each measurement two ways: elevation in metres above mean sea level
+    (the standard hydrogeological datum, DVR90), and depth below the ground
+    surface in metres. Uses resting/natural measurements only (excludes readings
+    taken during pumping) and excludes rejected quality-control records. Returns a
+    plant-level summary (range of water-table elevation across boreholes, date
+    span, data-age warning) plus per-borehole/per-intake detail with the latest
+    value and full historical series. Use this for questions about water level,
+    the water table, groundwater head, or how the water table has changed over time."""
+    return await _water_level(plantid)
+
+
 @mcp.tool()
 async def compare_source_to_tap(plantid: int, compoundno: int) -> dict:
     """Compare SOURCE groundwater chemistry against TREATED tap water for a plant.
