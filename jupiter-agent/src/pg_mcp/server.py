@@ -8,6 +8,13 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 import httpx
 
+from pyproj import Transformer
+
+# WGS84 (lon/lat) -> ETRS89 / UTM zone 32N (EPSG:25832), the CRS Jupiter uses.
+# always_xy=True means we pass (lon, lat) and get (easting, northing).
+_WGS84_TO_UTM32 = Transformer.from_crs("EPSG:4326", "EPSG:25832", always_xy=True)
+
+
 load_dotenv()
 
 pool = None
@@ -28,7 +35,9 @@ mcp = FastMCP("jupiter-mcp", lifespan=lifespan)
 async def geocode_address(address: str) -> dict:
     """Convert a Danish address string to UTM32 EUREF89 (EPSG:25832) coordinates.
     Call this whenever the user provides an address instead of coordinates.
-    Returns address, x_utm32 (easting), and y_utm32 (northing)."""
+    Returns address, x_utm32 (easting), and y_utm32 (northing).
+    If the address cannot be found, returns an 'error' field — in that case do
+    NOT proceed with guessed coordinates; report that the address could not be located."""
     async with httpx.AsyncClient() as client:
         r = await client.get(
             "https://api.dataforsyningen.dk/adresser",
@@ -37,18 +46,31 @@ async def geocode_address(address: str) -> dict:
         )
         r.raise_for_status()
         data = r.json()
+
     if not data:
         return {"error": f"No address found for: {address}"}
+
     hit = data[0]
-    etrs = hit.get("adgangsadresse", {}).get("etrs89koordinat", {})
-    x = etrs.get("øst")
-    y = etrs.get("nord")
-    if x is None or y is None:
-        return {"error": "Could not extract UTM32 coordinates from DAWA response", "raw": hit}
+    # DAWA returns WGS84 lon/lat under adgangsadresse.adgangspunkt.koordinater
+    try:
+        koord = hit["adgangsadresse"]["adgangspunkt"]["koordinater"]
+        lon, lat = float(koord[0]), float(koord[1])
+    except (KeyError, TypeError, IndexError, ValueError):
+        return {
+            "error": "Could not extract coordinates from the DAWA response.",
+            "raw_keys": list(hit.keys()),
+        }
+
+    # Project WGS84 -> UTM32 (EPSG:25832) ourselves, rather than relying on DAWA
+    # to return UTM coordinates (which it no longer does in this response shape).
+    x, y = _WGS84_TO_UTM32.transform(lon, lat)
+
     return {
         "address": hit.get("adressebetegnelse", address),
-        "x_utm32": x,
-        "y_utm32": y,
+        "x_utm32": round(x, 2),
+        "y_utm32": round(y, 2),
+        "wgs84_lon": lon,
+        "wgs84_lat": lat,
     }
 
 

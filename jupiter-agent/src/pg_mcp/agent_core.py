@@ -23,8 +23,13 @@ async def call_mcp_tool(session: ClientSession, name: str, args: dict) -> str:
 
 
 def build_claude_tools(tools_response) -> list[dict]:
-    """Translate the MCP tool list into the Anthropic tool schema."""
-    return [
+    """Translate the MCP tool list into the Anthropic tool schema.
+
+    The final tool carries a cache_control marker so the entire tool block
+    (which is identical on every call) is cached. Caching covers the prefix in
+    tools -> system -> messages order, so marking the last tool caches all tools.
+    """
+    tools = [
         {
             "name": tool.name,
             "description": tool.description,
@@ -32,6 +37,9 @@ def build_claude_tools(tools_response) -> list[dict]:
         }
         for tool in tools_response.tools
     ]
+    if tools:
+        tools[-1]["cache_control"] = {"type": "ephemeral"}
+    return tools
 
 
 async def run_claude_turn(
@@ -60,7 +68,13 @@ async def run_claude_turn(
         response = await anthropic_client.messages.create(
             model=model,
             max_tokens=4096,
-            system=system_prompt,
+            system=[
+                {
+                    "type": "text",
+                    "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
             tools=tools,
             messages=messages,
         )
