@@ -5,6 +5,7 @@ import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 import src.pg_mcp.database as db
 from contextlib import asynccontextmanager
+from mcp.types import ToolAnnotations
 from dotenv import load_dotenv
 import httpx
 
@@ -19,6 +20,14 @@ load_dotenv()
 
 pool = None
 
+READONLY = ToolAnnotations(
+    readOnlyHint=True, destructiveHint=False,
+    idempotentHint=True, openWorldHint=False,
+)
+READONLY_EXTERNAL = ToolAnnotations(
+    readOnlyHint=True, destructiveHint=False,
+    idempotentHint=True, openWorldHint=True,
+)
 
 @asynccontextmanager
 async def lifespan(app):
@@ -31,13 +40,16 @@ async def lifespan(app):
 mcp = FastMCP("jupiter-mcp", lifespan=lifespan)
 
 
-@mcp.tool()
+@mcp.tool(
+        annotations=READONLY_EXTERNAL
+)
 async def geocode_address(address: str) -> dict:
     """Convert a Danish address string to UTM32 EUREF89 (EPSG:25832) coordinates.
     Call this whenever the user provides an address instead of coordinates.
     Returns address, x_utm32 (easting), and y_utm32 (northing).
     If the address cannot be found, returns an 'error' field — in that case do
     NOT proceed with guessed coordinates; report that the address could not be located."""
+    
     async with httpx.AsyncClient() as client:
         r = await client.get(
             "https://api.dataforsyningen.dk/adresser",
@@ -74,7 +86,9 @@ async def geocode_address(address: str) -> dict:
     }
 
 
-@mcp.tool()
+@mcp.tool(
+        annotations=READONLY
+)
 async def find_supply_plant(x_utm32: float, y_utm32: float) -> list[dict]:
     """Find the drinking water plant(s) supplying a location.
     Input: UTM32 EUREF89 (EPSG:25832) coordinates.
@@ -93,12 +107,15 @@ async def find_supply_plant(x_utm32: float, y_utm32: float) -> list[dict]:
     return await db.fetch_all(pool, query, x_utm32, y_utm32)
 
 
-@mcp.tool()
+@mcp.tool(
+        annotations=READONLY
+)
 async def search_compound(name: str) -> list[dict]:
     """Resolve a chemical name (English or Danish) to Jupiter compound number(s).
     Always call this before any chemistry query — never hardcode compound IDs.
     Compound names in Jupiter are Danish (e.g. 'Nitrat', 'Perfluorerede stoffer').
     Wildcards (%) are added automatically if omitted."""
+
     if "%" not in name:
         name = f"%{name}%"
     query = """
@@ -110,12 +127,30 @@ async def search_compound(name: str) -> list[dict]:
     """
     return await db.fetch_all(pool, query, name)
 
+# Common citizen-facing names / acronyms → the Danish group term stored in
+# compoundgrouplist.longtext. The database's group names are Danish, but users
+# (and the international literature) use acronyms like "PFAS". This small alias
+# layer bridges that gap so the tool works regardless of which name is used.
+_GROUP_ALIASES = {
+    "pfas": "Perfluorerede stoffer",
+    "perfluorinated": "Perfluorerede stoffer",
+    "pesticides": "Pesticider",
+    "pesticide": "Pesticider",
+}
 
-@mcp.tool()
+@mcp.tool(
+        annotations=READONLY
+)
 async def get_compound_group(group_name: str) -> list[dict]:
     """Get all compound IDs belonging to a named compound group.
     Critical for PFAS queries — use group_name='Perfluorerede stoffer' for all PFAS compounds.
     Wildcards (%) are added automatically if omitted."""
+
+    # Resolve known aliases (case-insensitive) before searching.
+    key = group_name.strip().lower().strip("%")
+    if key in _GROUP_ALIASES:
+        group_name = _GROUP_ALIASES[key]
+
     if "%" not in group_name:
         group_name = f"%{group_name}%"
     query = """
@@ -167,7 +202,9 @@ async def _tap_water_quality(plantid: int, compoundno: int, limit: int = 20) -> 
     return await db.fetch_all(pool, query, plantid, compoundno, limit)
 
 
-@mcp.tool()
+@mcp.tool(
+    annotations=READONLY
+)
 async def get_water_quality(plantid: int, compoundno: int, limit: int = 20) -> list[dict]:
     """Get recent chemistry measurements at a drinking water plant (treated/tap water).
     Applies all Jupiter quality filters (qualitycontrol, samplestatus, project, date).
@@ -176,10 +213,13 @@ async def get_water_quality(plantid: int, compoundno: int, limit: int = 20) -> l
       EXCEEDS_LIMIT — amount exceeds consumer_max
       NOT_DETECTED — attribute field is non-null (below detection, flagged, or estimated)
       UNIT_MISMATCH — cannot compare due to differing units"""
+    
     return await _tap_water_quality(plantid, compoundno, limit)
 
 
-@mcp.tool()
+@mcp.tool(
+    annotations=READONLY
+)
 async def get_legal_limit(compoundno: int) -> dict:
     """Get the official Danish drinking water limit for a compound.
     Returns consumer_min, consumer_max, waterworks_max, and unit.
@@ -321,7 +361,9 @@ async def _source_water_quality(plantid: int, compoundno: int) -> dict:
     }
 
 
-@mcp.tool()
+@mcp.tool(
+        annotations=READONLY
+)
 async def get_source_water_quality(plantid: int, compoundno: int) -> dict:
     """Get the SOURCE groundwater chemistry for the boreholes feeding a drinking water plant.
     This is the raw, untreated water at the abstraction boreholes — distinct from the
@@ -331,6 +373,7 @@ async def get_source_water_quality(plantid: int, compoundno: int) -> dict:
     Returns a plant-level summary (min/max/avg across boreholes, date range, and a
     data-age warning if the latest source sample is old) plus per-borehole detail with
     the latest value and full historical series for each borehole."""
+
     return await _source_water_quality(plantid, compoundno)
 
 
@@ -448,7 +491,9 @@ async def _water_level(plantid: int) -> dict:
     }
 
 
-@mcp.tool()
+@mcp.tool(
+    annotations=READONLY
+)
 async def get_water_level(plantid: int) -> dict:
     """Get the groundwater LEVEL (water table) at the boreholes feeding a drinking
     water plant. This is the height of the water table, NOT water chemistry.
@@ -460,10 +505,13 @@ async def get_water_level(plantid: int) -> dict:
     span, data-age warning) plus per-borehole/per-intake detail with the latest
     value and full historical series. Use this for questions about water level,
     the water table, groundwater head, or how the water table has changed over time."""
+
     return await _water_level(plantid)
 
 
-@mcp.tool()
+@mcp.tool(
+        annotations=READONLY
+)
 async def compare_source_to_tap(plantid: int, compoundno: int) -> dict:
     """Compare SOURCE groundwater chemistry against TREATED tap water for a plant.
     Returns both datasets side by side along with structured caveats.
@@ -472,6 +520,7 @@ async def compare_source_to_tap(plantid: int, compoundno: int) -> dict:
     different years), while tap values are the blended, treated plant output. A naive
     subtraction would be scientifically misleading. Present the comparison qualitatively,
     surfacing the caveats to the user."""
+
     source = await _source_water_quality(plantid, compoundno)
     tap = await _tap_water_quality(plantid, compoundno, limit=20)
 
