@@ -143,8 +143,12 @@ _GROUP_ALIASES = {
 )
 async def get_compound_group(group_name: str) -> list[dict]:
     """Get all compound IDs belonging to a named compound group.
-    Critical for PFAS queries — use group_name='Perfluorerede stoffer' for all PFAS compounds.
-    Wildcards (%) are added automatically if omitted."""
+    Use this for any CLASS of substances (PFAS, pesticides, etc.) rather than
+    searching for individual compounds. Common English names and acronyms are
+    understood — e.g. get_compound_group("PFAS") or get_compound_group("pesticides")
+    — and are mapped internally to the Danish group terms in Jupiter, so you do
+    not need to supply the Danish name yourself. Wildcards (%) are added
+    automatically if omitted."""
 
     # Resolve known aliases (case-insensitive) before searching.
     key = group_name.strip().lower().strip("%")
