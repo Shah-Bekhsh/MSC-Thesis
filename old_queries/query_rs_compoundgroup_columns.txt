@@ -1,0 +1,13 @@
+    column_name     |          data_type          
+--------------------+-----------------------------
+ compoundno         | numeric
+ compoundgroupno    | numeric
+ subcompoundgroupno | numeric
+ insertdate         | timestamp without time zone
+ updatedate         | timestamp without time zone
+ convtocompoundno   | numeric
+ convfactor         | numeric
+ stancode           | numeric
+ stancodetype       | text
+(9 rows)
+

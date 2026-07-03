@@ -1,0 +1,5 @@
+ total_plants | has_coordinates | has_municipality 
+--------------+-----------------+------------------
+       103195 |           70062 |           103039
+(1 row)
+

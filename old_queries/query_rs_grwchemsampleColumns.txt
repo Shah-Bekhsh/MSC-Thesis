@@ -1,0 +1,60 @@
+      column_name       |          data_type          
+------------------------+-----------------------------
+ sampleid               | numeric
+ boreholeid             | numeric
+ intakeid               | numeric
+ outtakeid              | numeric
+ boreholeno             | text
+ intakeno               | numeric
+ outtakeno              | numeric
+ top                    | numeric
+ bottom                 | numeric
+ sampledate             | timestamp without time zone
+ project                | text
+ laboratory             | numeric
+ laboratoriyrefno       | text
+ purpose                | numeric
+ extent                 | numeric
+ cause                  | text
+ sourcetype             | numeric
+ watertype              | numeric
+ remark                 | text
+ samplelocality         | text
+ sumcationscalculated   | numeric
+ sumanoinscalculated    | numeric
+ preprocessing          | numeric
+ sampledby              | text
+ client                 | numeric
+ clientname             | text
+ samplereportdate       | timestamp without time zone
+ validatedby            | text
+ cleaningstart          | timestamp without time zone
+ cleaningend            | timestamp without time zone
+ cleaningyield          | numeric
+ partofsampleid         | numeric
+ amount                 | numeric
+ resamplestatus         | numeric
+ unit                   | numeric
+ previoussampleid       | numeric
+ qualitycontrol         | numeric
+ labreferencename       | text
+ projectphase           | numeric
+ laboratoryreceiveddate | timestamp without time zone
+ samplingfirm           | numeric
+ samplingequipment      | numeric
+ samplestatus           | numeric
+ samplequalitymark      | numeric
+ samplestatususer       | text
+ samplestatusdate       | timestamp without time zone
+ dataowner              | text
+ guid                   | character
+ guid_borehole          | character
+ guid_intake            | character
+ guid_outtake           | character
+ guid_projectphase      | character
+ insertdate             | timestamp without time zone
+ updatedate             | timestamp without time zone
+ insertuser             | text
+ updateuser             | text
+(56 rows)
+

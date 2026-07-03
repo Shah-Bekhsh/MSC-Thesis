@@ -1,0 +1,13 @@
+ compoundno |         long_text         | short_text |  casno   | grwunit 
+------------+---------------------------+------------+----------+---------
+        247 | Nitrat-N                  |            |          |       1
+        246 | Nitrat                    | Nitrat     | 14797558 |       1
+       2737 | 2-Ethylhexylnitrat        |            | 27247967 |      20
+       1689 | Diethylen-glykol-dinitrat |            |   693210 |        
+         93 | Nitrit+Nitrat             |            |          |       1
+        251 | Nitrit+nitrat-N           |            |          |       1
+        248 | Nitrat som KNO3           |            |  7757791 |       1
+       1774 | Cellulosenitrat           |            |  9004700 |        
+       2494 | Nitrat/nitrit kriterie    |            |          |     279
+(9 rows)
+

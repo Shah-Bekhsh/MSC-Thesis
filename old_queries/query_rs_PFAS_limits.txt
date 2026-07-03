@@ -1,0 +1,45 @@
+                       compound                       | consumer_max | unit 
+------------------------------------------------------+--------------+------
+ Perfluorbutansulfonsyre (lineær)                     |          0.1 | µg/l
+ Perfluorbutansyre (lineær)                           |          0.1 | µg/l
+ Perfluordecansyre (lineær)                           |          0.1 | µg/l
+ Perfluorheptansyre (lineær)                          |          0.1 | µg/l
+ Perfluorhexansulfonsyre                              |        0.002 | µg/l
+ Perfluorhexansyre (lineær)                           |          0.1 | µg/l
+ Perfluornonansyre                                    |        0.002 | µg/l
+ Perfluoroctansulfonamid                              |          0.1 | µg/l
+ Perfluoroctansulfonsyre (sum forgrenet og lineær)    |        0.002 | µg/l
+ Perfluoroctansyre                                    |        0.002 | µg/l
+ Perfluorpentansyre (lineær)                          |          0.1 | µg/l
+ Perfluorbutansyre (sum forgrenet og lineær)          |          0.1 | µg/l
+ Perfluorhexansulfonsyre (sum forgrenet og lineær)    |        0.002 | µg/l
+ Perfluoroctansulfonsyre (sum forgrenet og lineær)    |        0.002 | µg/l
+ Perfluordecansulfonsyre (sum forgrenet og lineær)    |          0.1 | µg/l
+ Perfluorhexansyre (sum forgrenet og lineær)          |          0.1 | µg/l
+ Perfluorheptansyre (sum forgrenet og lineær)         |          0.1 | µg/l
+ Perfluoroctansyre (sum forgrenet og lineær)          |        0.002 | µg/l
+ Perfluornonansyre (sum forgrenet og lineær)          |        0.002 | µg/l
+ Perfluoroctansulfonamid (sum forgrenet og lineær)    |          0.1 | µg/l
+ Perfluordecansyre (sum forgrenet og lineær)          |          0.1 | µg/l
+ Perfluorundecansyre (sum forgrenet og lineær)        |          0.1 | µg/l
+ Perfluordodecansyre (sum forgrenet og lineær)        |          0.1 | µg/l
+ Perfluortridecansyre (sum forgrenet og lineær)       |          0.1 | µg/l
+ Perfluorbutansulfonsyre (sum forgrenet og lineær)    |          0.1 | µg/l
+ Perfluorheptansulfonsyre (sum forgrenet og lineær)   |          0.1 | µg/l
+ Perfluorpentansyre (sum forgrenet og lineær)         |          0.1 | µg/l
+ 6:2 Fluortelomersulfonsyre (sum forgrenet og lineær) |          0.1 | µg/l
+ Perfluorpentansulfonsyre (sum forgrenet og lineær)   |          0.1 | µg/l
+ Perfluornonansulfonsyre (sum forgrenet og lineær)    |          0.1 | µg/l
+ Perfluorundecansulfonsyre (sum forgrenet og lineær)  |          0.1 | µg/l
+ Perfluordodecansulfonsyre (sum forgrenet og lineær)  |          0.1 | µg/l
+ Perfluortridecansulfonsyre (sum forgrenet og lineær) |          0.1 | µg/l
+ Perfluorhexansulfonsyre (lineær)                     |        0.002 | µg/l
+ Perfluoroctansulfonsyre (lineær)                     |        0.002 | µg/l
+ Perfluoroctansyre (lineær)                           |        0.002 | µg/l
+ Perfluornonansyre (lineær)                           |        0.002 | µg/l
+ Perfluoroctansulfonamid (lineær)                     |          0.1 | µg/l
+ Sum af PFAS, 12 stoffer                              |          0.1 | µg/l
+ PFAS (sum af PFOA, PFOS, PFNA og PFHxS)              |        0.002 | µg/l
+ 6:2 Fluortelomersulfonsyre (lineær)                  |          0.1 | µg/l
+(41 rows)
+

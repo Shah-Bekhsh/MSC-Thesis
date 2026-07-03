@@ -1,0 +1,14 @@
+                     plantname                      |     plantaddress     |     sampledate      | amount | unit | compound | legal_limit |    status     
+----------------------------------------------------+----------------------+---------------------+--------+------+----------+-------------+---------------
+ Lindegårdsvej 1                                    | Lindegårdsvej 1      | 2171-11-30 03:00:00 |     69 | mg/l | Nitrat   |          50 | EXCEEDS LIMIT
+ Højstrupgårds Vandværk                             | Gartnervej 55        | 2031-06-08 09:30:00 |    2.8 | mg/l | Nitrat   |          50 | OK
+ Gammel Nøragervej 22                               | Gammel Nøragervej 22 | 2026-03-13 08:45:00 |    0.3 | mg/l | Nitrat   |          50 | OK
+ Særslev Vandværk                                   | Nykøbingvej 60A      | 2026-03-13 08:25:00 |      2 | mg/l | Nitrat   |          50 | OK
+ Hårup Vandværk                                     | Bøggildsvej 41       | 2026-03-12 13:17:00 |   0.68 | mg/l | Nitrat   |          50 | OK
+ Tranten Vandværk Amba                              | Gammel Viborgvej 40B | 2026-03-12 12:55:29 |    0.3 | mg/l | Nitrat   |          50 | OK
+ I/S Bjerring Vestre Vandværk                       | Vindumvej            | 2026-03-12 11:30:00 |     46 | mg/l | Nitrat   |          50 | OK
+ Sørup vandværk                                     | Sørupvej 18          | 2026-03-12 10:32:00 |    2.5 | mg/l | Nitrat   |          50 | OK
+ Hasselager-Kolt Vandværk, Kolt Skovvej             | Kolt Skovvej 7       | 2026-03-12 09:58:21 |    0.4 | mg/l | Nitrat   |          50 | OK
+ Kalundborg Vandforsyning A/S, analyser vv, ledning | Dokhavnsvej 15       | 2026-03-12 08:25:00 |    3.4 | mg/l | Nitrat   |          50 | OK
+(10 rows)
+

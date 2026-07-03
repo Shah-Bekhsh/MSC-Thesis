@@ -1,0 +1,5 @@
+ compoundno | long_text | short_text | sortno |  casno   | euno | limitationdate | molarweight | charge | remark | drwunit | grwunit |     insertdate      |     updatedate      
+------------+-----------+------------+--------+----------+------+----------------+-------------+--------+--------+---------+---------+---------------------+---------------------
+        246 | Nitrat    | Nitrat     |        | 14797558 |      |                |       62.01 |     -1 |        |       1 |       1 | 2022-02-01 08:26:38 | 2023-05-12 11:00:27
+(1 row)
+

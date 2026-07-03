@@ -1,0 +1,24 @@
+ compoundno |                      long_text                      | short_text 
+------------+-----------------------------------------------------+------------
+       2598 | Perfluorbutansulfonamid                             | 
+       1386 | Perfluoroctan sulfonyl fluorid                      | 
+       2603 | Perfluor-4-methoxybutansyre                         | 
+       1602 | 2H,2H-Perfluor-decansyre                            | 
+       1606 | 1H,1H,2H,2H- Perfluorhexansulfonsyre                | 
+       1609 | 1H,1H,2H,2H-Perfluorhexanol                         | 
+       1895 | Perfluor-4-ethylcyclohexan sulfonsyre               | 
+       2163 | Perfluoroctansyre inklusiv precursor                | 
+       2165 | Perfluorbutansulfonsyre inklusiv precursor          | 
+       2174 | Perfluortetradecansyre inklusiv precursor           | 
+       2178 | Perfluordodecansyre inklusiv precursor              | 
+       2975 | Perfluorpropansulfonsyre                            | 
+       2986 | Perfluorundecansulfonsyre inklusiv precursor        | 
+       2913 | Perfluorheptansyre (sum forgrenet og lineær)        | 
+       2920 | Perfluortridecansyre (sum forgrenet og lineær)      | 
+       2927 | Perfluorundecansulfonsyre (sum forgrenet og lineær) | 
+       3046 | Perfluor-4-methoxybutansyre inklusiv precursor      | 
+       2936 | Perfluortetradecansyre (sum forgrenet og lineær)    | 
+       1262 | Perfluornonansyre                                   | 
+       2597 | perfluor-2,5-dimethyl-3,6-dioxanonansyre            | 
+(20 rows)
+

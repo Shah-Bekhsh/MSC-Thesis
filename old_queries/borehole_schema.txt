@@ -1,0 +1,100 @@
+    column_name    |          data_type          
+-------------------+-----------------------------
+ boreholeid        | numeric
+ boreholeno        | text
+ namingsys         | text
+ purpose           | text
+ use               | text
+ status            | text
+ drilldepth        | numeric
+ elevation         | numeric
+ ctrpeleva         | numeric
+ verticaref        | text
+ ctrpdescr         | text
+ ctrpprecis        | numeric
+ ctrpzprecis       | numeric
+ ctrpheight        | numeric
+ elevametho        | text
+ elevaquali        | text
+ elevasourc        | text
+ location          | text
+ comments          | text
+ various           | text
+ xutm              | numeric
+ yutm              | numeric
+ utmzone           | numeric
+ datum             | text
+ mapsheet          | text
+ mapdistx          | numeric
+ mapdisty          | numeric
+ sys34x            | numeric
+ sys34y            | numeric
+ sys34zone         | numeric
+ latitude          | numeric
+ longitude         | numeric
+ locatmetho        | text
+ locatquali        | text
+ locatsourc        | text
+ borhpostc         | numeric
+ borhtownno        | numeric
+ countyno          | numeric
+ municipal         | text
+ houseownas        | numeric
+ landregno         | text
+ driller           | text
+ drilllogno        | text
+ drillborno        | text
+ reportedby        | text
+ consultant        | text
+ consulogno        | text
+ consuborno        | text
+ drilledfor        | text
+ drforadres        | text
+ drforpostc        | numeric
+ drilstdate        | timestamp without time zone
+ drilendate        | timestamp without time zone
+ abandondat        | timestamp without time zone
+ prevborhno        | text
+ numsuplbor        | numeric
+ samrecedat        | timestamp without time zone
+ samdescdat        | timestamp without time zone
+ numofsampl        | numeric
+ numsamsto         | numeric
+ litholnote        | text
+ togeusdate        | timestamp without time zone
+ grumocountyno     | numeric
+ grumoborno        | numeric
+ grumobortype      | numeric
+ grumoareano       | numeric
+ borhtownno2007    | numeric
+ locquali          | text
+ loopareano        | numeric
+ loopstation       | numeric
+ looptype          | numeric
+ usechangedate     | timestamp without time zone
+ envcen            | numeric
+ abandcause        | text
+ abandcontr        | text
+ startdayunknown   | text
+ startmnthunknwn   | text
+ wwboreholeno      | text
+ xutm32euref89     | numeric
+ yutm32euref89     | numeric
+ zdvr90            | numeric
+ installation      | text
+ workingconditions | text
+ approach          | text
+ accessremark      | text
+ locatepersonemail | text
+ preservationzone  | numeric
+ protectionzone    | numeric
+ region            | numeric
+ usechangecause    | numeric
+ guid              | character
+ insertdate        | timestamp without time zone
+ updatedate        | timestamp without time zone
+ insertuser        | text
+ updateuser        | text
+ dataowner         | text
+(96 rows)
+

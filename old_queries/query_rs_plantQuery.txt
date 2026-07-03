@@ -1,0 +1,14 @@
+ plantid |                   plantname                    |         plantaddress         | plantpostalcode | municipalityno2007 | active | dataowner | watertype | xutm32euref89 | yutm32euref89 
+---------+------------------------------------------------+------------------------------+-----------------+--------------------+--------+-----------+-----------+---------------+---------------
+   52698 | Freia Forellen Export ApS                      | Smedegade (7200) 24          |            7200 |                573 |      1 | KO        | G         |   488496.0000 |  6167420.0000
+   52588 | Kristian Dal                                   | Biltoftvej (6800) 23         |            6800 |                573 |      1 | KO        | G         |   477407.9000 |  6165159.5000
+   52593 | Henrik Søgaard                                 | Havbjergvej (6800) 4         |            6800 |                573 |      1 | KO        | G         |   478960.0000 |  6168134.0000
+   53934 | Styrelsen for Grøn Arealomlægning og Vandmiljø | Hindsigvej 4                 |            6800 |                573 |      1 | KO        | G         |   470002.0600 |  6175808.5000
+   53852 | Søren Daugaard Haltrup                         | Askærgårdvej (6800) 92       |            6800 |                573 |      1 | KO        | G         |   469795.2200 |  6168888.0000
+   63194 | Højagergårds Vandværk                          | Nørremarksvej 16             |            8830 |                791 |      1 | KO        | G         |   533203.8000 |  6256392.0000
+   52395 | Henry Hedegård                                 | Skonagervej 11, Næsbjerg     |            6800 |                573 |      1 | KO        | G         |   472762.0000 |  6166105.0000
+   49835 | Torben Kragh                                   | Klintingvej (6830,6854) 160  |            6854 |                573 |      1 | KO        | G         |   453783.9000 |  6177550.0000
+   49852 | Jesper Arnth Jensen                            | Vittarpvej (6855) 91         |            6855 |                573 |      1 | KO        | G         |   460590.8000 |  6171770.5000
+   51769 | Kenneth Nielsen                                | Hinnumvej 16                 |            7200 |                530 |      1 | KO        | G         |   501926.5600 |  6180432.5000
+(10 rows)
+

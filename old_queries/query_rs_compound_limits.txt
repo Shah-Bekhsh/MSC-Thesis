@@ -1,0 +1,5 @@
+ total_entries | has_consumer_limit | has_waterworks_limit | has_recommended_limit 
+---------------+--------------------+----------------------+-----------------------
+          1347 |               1217 |                  675 |                     3
+(1 row)
+

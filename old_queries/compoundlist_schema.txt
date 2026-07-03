@@ -1,0 +1,18 @@
+  column_name   |          data_type          
+----------------+-----------------------------
+ compoundno     | numeric
+ long_text      | text
+ short_text     | text
+ sortno         | numeric
+ casno          | numeric
+ euno           | numeric
+ limitationdate | timestamp without time zone
+ molarweight    | numeric
+ charge         | numeric
+ remark         | text
+ drwunit        | numeric
+ grwunit        | numeric
+ insertdate     | timestamp without time zone
+ updatedate     | timestamp without time zone
+(14 rows)
+

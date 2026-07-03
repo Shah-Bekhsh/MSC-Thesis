@@ -1,0 +1,13 @@
+ watertype |    longtext     
+-----------+-----------------
+ A         | Andet
+ D         | Drænvand
+ G         | Grundvand
+ H         | Havvand
+ K         | Kilde
+ O         | Overfladevand
+ S         | Sø
+ V         | Vandløb
+ X         | Andet vådområde
+(9 rows)
+

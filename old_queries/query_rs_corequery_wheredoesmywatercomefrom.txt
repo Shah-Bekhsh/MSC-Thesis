@@ -1,0 +1,14 @@
+ plantid |                plantname                |     plantaddress     | plantpostalcode | watertype | active |    distance_km    
+---------+-----------------------------------------+----------------------+-----------------+-----------+--------+-------------------
+  106250 | Dragør Vand A/S                         | Stationsvej  15      |            2791 | G         |      1 | 62.21335284691761
+  106251 | St. Magleby vv                          | Nordre Kinkelgade 20 |            2791 | G         |      1 | 64.36500545414638
+  107040 | Tårnby lednigsnet                       | Gemmas Alle 39       |                 | G         |      1 |  65.0124266406882
+  106648 | Tårnby vv                               | Gemmas Alle 39       |            2770 | G         |      1 |  65.0124266406882
+  195083 | Tårnby Vand - Afværgeanlæg              | Gemmas Alle 39       |            2770 | G         |      1 | 65.02559779105299
+  187124 | Boring DGUnr. 201.3739, Ermelundsværket | Dyrehaven 2          |            2800 | G         |      1 | 67.60100928191684
+  106292 | Ermelundværket                          | Søløsevej  71        |            2820 | G         |      1 |  68.9686889094651
+  191751 | Dyrehavegaard Kildeplads                | Trongårdsvej 12A     |            2800 | G         |      1 | 69.79394101406893
+  106560 | Trørød vv                               | Rundforbivej  54     |            2950 | G         |      1 | 69.88653218367497
+  193616 | Dybendal Kildeplads                     | Dybendalsvej 19      |            2800 | G         |      1 | 70.17222164337463
+(10 rows)
+

@@ -1,0 +1,43 @@
+         column_name         |          data_type          
+-----------------------------+-----------------------------
+ sampleid                    | numeric
+ compoundno                  | numeric
+ analysisno                  | numeric
+ analysissite                | numeric
+ fieldfiltration             | numeric
+ attribute                   | text
+ amount                      | numeric
+ unit                        | numeric
+ reportedcompoundno          | numeric
+ reportedunit                | numeric
+ reportedamount              | numeric
+ laboratory                  | numeric
+ laboratoryrefno             | text
+ analysismethod              | numeric
+ qualitycontrol              | numeric
+ remark                      | text
+ preprocessing               | numeric
+ preservation                | numeric
+ packing                     | numeric
+ detectionlimit              | numeric
+ reporteddetectionlimit      | numeric
+ quantificationlimit         | numeric
+ reportedquantificationlimit | numeric
+ analysisid                  | numeric
+ analysisdate                | timestamp without time zone
+ laboratoryreceiveddate      | timestamp without time zone
+ absoluteexpmeasuncertainty  | numeric
+ relativeexpmeasuncertainty  | numeric
+ analysisresponsible         | numeric
+ accreditedindicator         | text
+ fractionationmethod         | numeric
+ analysisresultidentifier    | text
+ sortno                      | numeric
+ guid                        | character
+ guid_grwchemsample          | character
+ insertdate                  | timestamp without time zone
+ updatedate                  | timestamp without time zone
+ insertuser                  | text
+ updateuser                  | text
+(39 rows)
+

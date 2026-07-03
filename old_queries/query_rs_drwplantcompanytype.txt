@@ -1,0 +1,13 @@
+  column_name  |          data_type          
+---------------+-----------------------------
+ plantid       | numeric
+ companytype   | text
+ companytypeno | numeric
+ guid          | character
+ guid_drwplant | character
+ insertdate    | timestamp without time zone
+ insertuser    | text
+ updatedate    | timestamp without time zone
+ updateuser    | text
+(9 rows)
+

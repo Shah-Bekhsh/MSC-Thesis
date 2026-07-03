@@ -1,0 +1,6 @@
+ compound | waterworks_max | pipelinenetwork_max | consumer_max | recommended_max | unit 
+----------+----------------+---------------------+--------------+-----------------+------
+ Nitrat   |             50 |                  50 |           50 |                 | mg/l
+ Nitrat-N |         11.289 |              11.289 |       11.289 |                 | mg/l
+(2 rows)
+

@@ -1,0 +1,20 @@
+    tablename     | columnname | columntype | columnno | codetype |       corrtablna        |   corrcolna   | standattypecode | standattopiccode | stdcodelist | remark |     insertdate      |     updatedate      
+------------------+------------+------------+----------+----------+-------------------------+---------------+-----------------+------------------+-------------+--------+---------------------+---------------------
+ BORHDIAM         | UNIT       |          0 |          |       46 | BOR$BOREHUL             | DIAMETERENHED |                 |                  |             |        | 1999-09-28 13:48:30 | 1999-09-28 14:54:40
+ CASING           | UNIT       |          0 |          |       46 | BOR$FOREROER            | DIAMETERENHED |                 |                  |             |        | 1999-09-28 13:48:30 | 1999-09-28 14:52:11
+ SCREEN           | UNIT       |          0 |          |       46 | BOR$FILTER              | DIAMETERENHED |                 |                  |             |        | 1999-09-28 13:48:30 | 1999-09-28 14:43:44
+ GRWCHEMANALYSIS  | UNIT       |          0 |          |      752 | GVK$ANALYSE             | ENHED         |                 |                  |             |        | 2006-08-31 15:35:59 | 
+ DRWCHEMANALYSIS  | UNIT       |          0 |          |      752 | DRV$ANALYSE             | ENHED         |                 |                  |             |        | 2006-08-31 14:47:59 | 
+ PLTCHEMANALYSIS  | UNIT       |          0 |          |      752 | DRV$ANALYSE             | ENHED         |                 |                  |             |        | 2015-02-10 11:49:05 | 
+ GRWCHEMSAMPLE    | UNIT       |          0 |          |      752 | GVK$PROEVE              | MAENGDEENHED  |                 |                  |             |        | 2006-08-31 15:23:24 | 
+ SECANALYSIS      | UNIT       |          0 |          |      752 | SEK$ANALYSIS            | UNIT          |                 |                  |             |        | 2006-11-14 15:32:47 | 
+ ABANDPARAM       | UNIT       |          0 |          |       46 | BOR$SLOEJFESTOF         | ENHED         |                 |                  |             |        | 2006-10-26 14:45:33 | 
+ POISOILANALYSIS  | UNIT       |          0 |          |      752 | PKT$JORDANALYSE         | ENHED         |                 |                  |             |        | 2015-10-06 13:32:52 | 
+ POIWATERANALYSIS | UNIT       |          0 |          |      752 | PKT$VANDANALYSE         | ENHED         |                 |                  |             |        | 2015-10-06 02:19:47 | 
+ GRWSOILANALYSIS  | UNIT       |          0 |          |      752 | GVK$JORDANALYSE         | ENHED         |                 |                  |             |        | 2015-10-06 22:30:06 | 
+ GRWAIRANALYSIS   | UNIT       |          0 |          |      752 | GVK$LUFTANALYSE         | ENHED         |                 |                  |             |        | 2015-10-07 00:28:06 | 
+ POIAIRANALYSIS   | UNIT       |          0 |          |      752 | PKT$LUFTANALYSE         | ENHED         |                 |                  |             |        | 2015-10-07 00:30:23 | 
+ PLTAIRANALYSIS   | UNIT       |          0 |          |      752 | DRV$LUFTANALYSE         | ENHED         |                 |                  |             |        | 2015-10-07 00:32:38 | 
+ LIMITLIST        | UNIT       |          0 |          |      752 | GEN$GRAENSEVAERDI_LISTE | ENHED         |                 |                  |             |        | 2019-12-06 09:53:11 | 
+(16 rows)
+

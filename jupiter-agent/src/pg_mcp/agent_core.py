@@ -49,7 +49,8 @@ async def run_claude_turn(
     tools: list[dict],
     system_prompt: str,
     messages: list[dict],
-) -> tuple[str, list[dict]]:
+    return_usage: bool = False,
+):
     """
     Process ONE user turn with the Claude backend.
 
@@ -58,11 +59,28 @@ async def run_claude_turn(
     caller can persist conversation state across turns.
 
     Returns:
-        (answer_text, trace) where trace is a list of dicts:
-            {"tool": str, "input": dict, "result": str}
+        (answer_text, trace)                       if return_usage is False
+        (answer_text, trace, usage)                if return_usage is True
+
+    where trace is a list of {"tool", "input", "result"} dicts, and usage is a
+    dict accumulating token counts across every API call made during this turn:
+        {
+          "api_calls": int,          # number of model invocations this turn
+          "input_tokens": int,       # sum of response.usage.input_tokens
+          "output_tokens": int,      # sum of response.usage.output_tokens
+          "cache_read_input_tokens": int,
+          "cache_creation_input_tokens": int,
+        }
     """
     trace: list[dict] = []
     answer_parts: list[str] = []
+    usage = {
+        "api_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+    }
 
     while True:
         response = await anthropic_client.messages.create(
@@ -78,6 +96,15 @@ async def run_claude_turn(
             tools=tools,
             messages=messages,
         )
+
+        # --- accumulate usage (safe if fields are absent) ---
+        u = getattr(response, "usage", None)
+        if u is not None:
+            usage["api_calls"] += 1
+            usage["input_tokens"] += getattr(u, "input_tokens", 0) or 0
+            usage["output_tokens"] += getattr(u, "output_tokens", 0) or 0
+            usage["cache_read_input_tokens"] += getattr(u, "cache_read_input_tokens", 0) or 0
+            usage["cache_creation_input_tokens"] += getattr(u, "cache_creation_input_tokens", 0) or 0
 
         assistant_content = response.content
         messages.append({"role": "assistant", "content": assistant_content})
@@ -98,7 +125,6 @@ async def run_claude_turn(
                         "content": result_text,
                     })
                 elif block.type == "text" and block.text.strip():
-                    # Claude sometimes narrates between tool calls; keep it.
                     answer_parts.append(block.text)
             messages.append({"role": "user", "content": tool_results})
         else:
@@ -107,4 +133,83 @@ async def run_claude_turn(
                     answer_parts.append(block.text)
             break
 
-    return "\n\n".join(p for p in answer_parts if p.strip()), trace
+    answer = "\n\n".join(p for p in answer_parts if p.strip())
+    if return_usage:
+        return answer, trace, usage
+    return answer, trace
+
+async def run_ollama_turn(
+    ollama_client,
+    model: str,
+    session: ClientSession,
+    tools: list[dict],
+    messages: list[dict],
+    return_usage: bool = False,
+):
+    """
+    Process ONE user turn with the Ollama (local) backend.
+
+    Mirrors run_claude_turn's contract but for Ollama's chat API and message
+    format. `tools` must be in Ollama's function schema (see build_ollama_tools
+    below). `messages` must already include the system message as messages[0]
+    and end with the new user message; it is mutated in place.
+
+    Returns (answer, trace) or (answer, trace, usage) like run_claude_turn.
+    Ollama usage fields: prompt_eval_count (input), eval_count (output); no cache.
+    """
+    trace: list[dict] = []
+    usage = {
+        "api_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_input_tokens": 0,       # always 0 for Ollama (no caching)
+        "cache_creation_input_tokens": 0,   # always 0 for Ollama
+    }
+
+    while True:
+        response = await ollama_client.chat(
+            model=model,
+            messages=messages,
+            tools=tools,
+        )
+
+        usage["api_calls"] += 1
+        usage["input_tokens"] += getattr(response, "prompt_eval_count", 0) or 0
+        usage["output_tokens"] += getattr(response, "eval_count", 0) or 0
+
+        message = response.message
+        assistant_msg = {"role": "assistant", "content": message.content or ""}
+        if message.tool_calls:
+            assistant_msg["tool_calls"] = message.tool_calls
+        messages.append(assistant_msg)
+
+        if not message.tool_calls:
+            answer = message.content or ""
+            if return_usage:
+                return answer, trace, usage
+            return answer, trace
+
+        for tool_call in message.tool_calls:
+            tool_name = tool_call.function.name
+            tool_args = tool_call.function.arguments
+            result_text = await call_mcp_tool(session, tool_name, tool_args)
+            trace.append({
+                "tool": tool_name,
+                "input": dict(tool_args) if tool_args else {},
+                "result": result_text,
+            })
+            messages.append({"role": "tool", "content": result_text})
+
+def build_ollama_tools(tools_response) -> list[dict]:
+    """Translate the MCP tool list into the Ollama function-tool schema."""
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description,
+                "parameters": tool.inputSchema,
+            },
+        }
+        for tool in tools_response.tools
+    ]
