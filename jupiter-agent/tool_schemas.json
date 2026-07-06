@@ -1,0 +1,1784 @@
+[
+  {
+    "name": "compare_source_to_tap",
+    "description": "Compare SOURCE groundwater chemistry against TREATED tap water for a plant.\n    Returns both datasets side by side along with structured caveats.\n    IMPORTANT: this tool deliberately does NOT compute a single treatment-efficiency\n    percentage. Source values are per-borehole raw groundwater (often sampled in\n    different years), while tap values are the blended, treated plant output. A naive\n    subtraction would be scientifically misleading. Present the comparison qualitatively,\n    surfacing the caveats to the user.",
+    "input_schema": {
+      "properties": {
+        "plantid": {
+          "title": "Plantid",
+          "type": "integer"
+        },
+        "compoundno": {
+          "title": "Compoundno",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "plantid",
+        "compoundno"
+      ],
+      "title": "compare_source_to_tapArguments",
+      "type": "object"
+    },
+    "output_schema": {
+      "$defs": {
+        "SourceBorehole": {
+          "properties": {
+            "boreholeno": {
+              "title": "Boreholeno",
+              "type": "string"
+            },
+            "n_measurements": {
+              "title": "N Measurements",
+              "type": "integer"
+            },
+            "latest": {
+              "$ref": "#/$defs/SourceLatest"
+            },
+            "series": {
+              "items": {
+                "$ref": "#/$defs/SourceMeasurement"
+              },
+              "title": "Series",
+              "type": "array"
+            }
+          },
+          "required": [
+            "boreholeno",
+            "n_measurements",
+            "latest",
+            "series"
+          ],
+          "title": "SourceBorehole",
+          "type": "object"
+        },
+        "SourceLatest": {
+          "properties": {
+            "sampledate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sampledate"
+            },
+            "amount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Amount"
+            },
+            "unit": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unit"
+            },
+            "attribute": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Attribute"
+            }
+          },
+          "required": [
+            "sampledate",
+            "amount",
+            "unit",
+            "attribute"
+          ],
+          "title": "SourceLatest",
+          "type": "object"
+        },
+        "SourceMeasurement": {
+          "properties": {
+            "sampledate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sampledate"
+            },
+            "amount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Amount"
+            },
+            "unit": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unit"
+            },
+            "attribute": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Attribute"
+            },
+            "detectionlimit": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Detectionlimit"
+            }
+          },
+          "required": [
+            "sampledate",
+            "amount",
+            "unit",
+            "attribute",
+            "detectionlimit"
+          ],
+          "title": "SourceMeasurement",
+          "type": "object"
+        },
+        "SourceSummary": {
+          "properties": {
+            "n_boreholes": {
+              "title": "N Boreholes",
+              "type": "integer"
+            },
+            "n_measurements": {
+              "title": "N Measurements",
+              "type": "integer"
+            },
+            "n_flagged": {
+              "title": "N Flagged",
+              "type": "integer"
+            },
+            "unit": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unit"
+            },
+            "earliest": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Earliest"
+            },
+            "latest": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Latest"
+            },
+            "data_age_warning": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Data Age Warning"
+            },
+            "min_amount": {
+              "title": "Min Amount",
+              "type": "number"
+            },
+            "max_amount": {
+              "title": "Max Amount",
+              "type": "number"
+            },
+            "avg_amount": {
+              "title": "Avg Amount",
+              "type": "number"
+            }
+          },
+          "required": [
+            "n_boreholes",
+            "n_measurements",
+            "n_flagged",
+            "unit",
+            "earliest",
+            "latest",
+            "data_age_warning"
+          ],
+          "title": "SourceSummary",
+          "type": "object"
+        },
+        "SourceWaterFound": {
+          "properties": {
+            "plantid": {
+              "title": "Plantid",
+              "type": "integer"
+            },
+            "compoundno": {
+              "title": "Compoundno",
+              "type": "integer"
+            },
+            "found": {
+              "title": "Found",
+              "type": "boolean"
+            },
+            "summary": {
+              "$ref": "#/$defs/SourceSummary"
+            },
+            "per_borehole": {
+              "items": {
+                "$ref": "#/$defs/SourceBorehole"
+              },
+              "title": "Per Borehole",
+              "type": "array"
+            }
+          },
+          "required": [
+            "plantid",
+            "compoundno",
+            "found",
+            "summary",
+            "per_borehole"
+          ],
+          "title": "SourceWaterFound",
+          "type": "object"
+        },
+        "SourceWaterNotFound": {
+          "properties": {
+            "plantid": {
+              "title": "Plantid",
+              "type": "integer"
+            },
+            "compoundno": {
+              "title": "Compoundno",
+              "type": "integer"
+            },
+            "found": {
+              "title": "Found",
+              "type": "boolean"
+            },
+            "note": {
+              "title": "Note",
+              "type": "string"
+            }
+          },
+          "required": [
+            "plantid",
+            "compoundno",
+            "found",
+            "note"
+          ],
+          "title": "SourceWaterNotFound",
+          "type": "object"
+        },
+        "WaterQualityRow": {
+          "properties": {
+            "plantname": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plantname"
+            },
+            "plantaddress": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plantaddress"
+            },
+            "sampledate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sampledate"
+            },
+            "amount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Amount"
+            },
+            "unit": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unit"
+            },
+            "compound": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Compound"
+            },
+            "attribute": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Attribute"
+            },
+            "detectionlimit": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Detectionlimit"
+            },
+            "legal_limit": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Legal Limit"
+            },
+            "limit_unit": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit Unit"
+            },
+            "status": {
+              "title": "Status",
+              "type": "string"
+            }
+          },
+          "required": [
+            "plantname",
+            "plantaddress",
+            "sampledate",
+            "amount",
+            "unit",
+            "compound",
+            "attribute",
+            "detectionlimit",
+            "legal_limit",
+            "limit_unit",
+            "status"
+          ],
+          "title": "WaterQualityRow",
+          "type": "object"
+        }
+      },
+      "properties": {
+        "plantid": {
+          "title": "Plantid",
+          "type": "integer"
+        },
+        "compoundno": {
+          "title": "Compoundno",
+          "type": "integer"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceWaterFound"
+            },
+            {
+              "$ref": "#/$defs/SourceWaterNotFound"
+            }
+          ],
+          "title": "Source"
+        },
+        "tap": {
+          "items": {
+            "$ref": "#/$defs/WaterQualityRow"
+          },
+          "title": "Tap",
+          "type": "array"
+        },
+        "tap_latest": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Tap Latest"
+        },
+        "source_latest": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Latest"
+        },
+        "caveats": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Caveats",
+          "type": "array"
+        }
+      },
+      "required": [
+        "plantid",
+        "compoundno",
+        "source",
+        "tap",
+        "tap_latest",
+        "source_latest",
+        "caveats"
+      ],
+      "title": "CompareResult",
+      "type": "object"
+    }
+  },
+  {
+    "name": "find_supply_plant",
+    "description": "Find the drinking water plant(s) supplying a location.\n    Input: UTM32 EUREF89 (EPSG:25832) coordinates.\n    Always call geocode_address first when the user provides an address.\n    Returns list of plants with plantid, name, address, watertype, and active status.",
+    "input_schema": {
+      "properties": {
+        "x_utm32": {
+          "title": "X Utm32",
+          "type": "number"
+        },
+        "y_utm32": {
+          "title": "Y Utm32",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x_utm32",
+        "y_utm32"
+      ],
+      "title": "find_supply_plantArguments",
+      "type": "object"
+    },
+    "output_schema": {
+      "$defs": {
+        "SupplyPlantRow": {
+          "properties": {
+            "plantid": {
+              "title": "Plantid",
+              "type": "number"
+            },
+            "plantname": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plantname"
+            },
+            "plantaddress": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plantaddress"
+            },
+            "plantpostalcode": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plantpostalcode"
+            },
+            "watertype": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Watertype"
+            },
+            "active": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Active"
+            }
+          },
+          "required": [
+            "plantid",
+            "plantname",
+            "plantaddress",
+            "plantpostalcode",
+            "watertype",
+            "active"
+          ],
+          "title": "SupplyPlantRow",
+          "type": "object"
+        }
+      },
+      "properties": {
+        "result": {
+          "items": {
+            "$ref": "#/$defs/SupplyPlantRow"
+          },
+          "title": "Result",
+          "type": "array"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "find_supply_plantOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "geocode_address",
+    "description": "Convert a Danish address string to UTM32 EUREF89 (EPSG:25832) coordinates.\n    Call this whenever the user provides an address instead of coordinates.\n    Returns address, x_utm32 (easting), and y_utm32 (northing).\n    If the address cannot be found, returns an 'error' field — in that case do\n    NOT proceed with guessed coordinates; report that the address could not be located.",
+    "input_schema": {
+      "properties": {
+        "address": {
+          "title": "Address",
+          "type": "string"
+        }
+      },
+      "required": [
+        "address"
+      ],
+      "title": "geocode_addressArguments",
+      "type": "object"
+    },
+    "output_schema": {
+      "$defs": {
+        "GeocodeError": {
+          "properties": {
+            "error": {
+              "title": "Error",
+              "type": "string"
+            },
+            "raw_keys": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Raw Keys",
+              "type": "array"
+            }
+          },
+          "required": [
+            "error"
+          ],
+          "title": "GeocodeError",
+          "type": "object"
+        },
+        "GeocodeSuccess": {
+          "properties": {
+            "address": {
+              "title": "Address",
+              "type": "string"
+            },
+            "x_utm32": {
+              "title": "X Utm32",
+              "type": "number"
+            },
+            "y_utm32": {
+              "title": "Y Utm32",
+              "type": "number"
+            },
+            "wgs84_lon": {
+              "title": "Wgs84 Lon",
+              "type": "number"
+            },
+            "wgs84_lat": {
+              "title": "Wgs84 Lat",
+              "type": "number"
+            }
+          },
+          "required": [
+            "address",
+            "x_utm32",
+            "y_utm32",
+            "wgs84_lon",
+            "wgs84_lat"
+          ],
+          "title": "GeocodeSuccess",
+          "type": "object"
+        }
+      },
+      "properties": {
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeocodeSuccess"
+            },
+            {
+              "$ref": "#/$defs/GeocodeError"
+            }
+          ],
+          "title": "Result"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "geocode_addressOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_compound_group",
+    "description": "Get all compound IDs belonging to a named compound group.\n    Use this for any CLASS of substances (PFAS, pesticides, etc.) rather than\n    searching for individual compounds. Common English names and acronyms are\n    understood — e.g. get_compound_group(\"PFAS\") or get_compound_group(\"pesticides\")\n    — and are mapped internally to the Danish group terms in Jupiter, so you do\n    not need to supply the Danish name yourself. Wildcards (%) are added\n    automatically if omitted.",
+    "input_schema": {
+      "properties": {
+        "group_name": {
+          "title": "Group Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "group_name"
+      ],
+      "title": "get_compound_groupArguments",
+      "type": "object"
+    },
+    "output_schema": {
+      "$defs": {
+        "CompoundGroupRow": {
+          "properties": {
+            "compoundno": {
+              "title": "Compoundno",
+              "type": "number"
+            },
+            "long_text": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Long Text"
+            },
+            "short_text": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Short Text"
+            }
+          },
+          "required": [
+            "compoundno",
+            "long_text",
+            "short_text"
+          ],
+          "title": "CompoundGroupRow",
+          "type": "object"
+        }
+      },
+      "properties": {
+        "result": {
+          "items": {
+            "$ref": "#/$defs/CompoundGroupRow"
+          },
+          "title": "Result",
+          "type": "array"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "get_compound_groupOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_legal_limit",
+    "description": "Get the official Danish drinking water limit for a compound.\n    Returns consumer_min, consumer_max, waterworks_max, and unit.\n    Returns an empty dict if no legal limit exists for the compound.",
+    "input_schema": {
+      "properties": {
+        "compoundno": {
+          "title": "Compoundno",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "compoundno"
+      ],
+      "title": "get_legal_limitArguments",
+      "type": "object"
+    },
+    "output_schema": {
+      "properties": {
+        "compound": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Compound"
+        },
+        "consumer_min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Consumer Min"
+        },
+        "consumer_max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Consumer Max"
+        },
+        "waterworks_max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Waterworks Max"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "title": "LegalLimitResult",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_source_water_quality",
+    "description": "Get the SOURCE groundwater chemistry for the boreholes feeding a drinking water plant.\n    This is the raw, untreated water at the abstraction boreholes — distinct from the\n    treated tap water returned by get_water_quality.\n    Only includes active abstraction intakes (intakeusage 1 or 3); decommissioned\n    boreholes are excluded.\n    Returns a plant-level summary (min/max/avg across boreholes, date range, and a\n    data-age warning if the latest source sample is old) plus per-borehole detail with\n    the latest value and full historical series for each borehole.",
+    "input_schema": {
+      "properties": {
+        "plantid": {
+          "title": "Plantid",
+          "type": "integer"
+        },
+        "compoundno": {
+          "title": "Compoundno",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "plantid",
+        "compoundno"
+      ],
+      "title": "get_source_water_qualityArguments",
+      "type": "object"
+    },
+    "output_schema": {
+      "$defs": {
+        "SourceBorehole": {
+          "properties": {
+            "boreholeno": {
+              "title": "Boreholeno",
+              "type": "string"
+            },
+            "n_measurements": {
+              "title": "N Measurements",
+              "type": "integer"
+            },
+            "latest": {
+              "$ref": "#/$defs/SourceLatest"
+            },
+            "series": {
+              "items": {
+                "$ref": "#/$defs/SourceMeasurement"
+              },
+              "title": "Series",
+              "type": "array"
+            }
+          },
+          "required": [
+            "boreholeno",
+            "n_measurements",
+            "latest",
+            "series"
+          ],
+          "title": "SourceBorehole",
+          "type": "object"
+        },
+        "SourceLatest": {
+          "properties": {
+            "sampledate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sampledate"
+            },
+            "amount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Amount"
+            },
+            "unit": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unit"
+            },
+            "attribute": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Attribute"
+            }
+          },
+          "required": [
+            "sampledate",
+            "amount",
+            "unit",
+            "attribute"
+          ],
+          "title": "SourceLatest",
+          "type": "object"
+        },
+        "SourceMeasurement": {
+          "properties": {
+            "sampledate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sampledate"
+            },
+            "amount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Amount"
+            },
+            "unit": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unit"
+            },
+            "attribute": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Attribute"
+            },
+            "detectionlimit": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Detectionlimit"
+            }
+          },
+          "required": [
+            "sampledate",
+            "amount",
+            "unit",
+            "attribute",
+            "detectionlimit"
+          ],
+          "title": "SourceMeasurement",
+          "type": "object"
+        },
+        "SourceSummary": {
+          "properties": {
+            "n_boreholes": {
+              "title": "N Boreholes",
+              "type": "integer"
+            },
+            "n_measurements": {
+              "title": "N Measurements",
+              "type": "integer"
+            },
+            "n_flagged": {
+              "title": "N Flagged",
+              "type": "integer"
+            },
+            "unit": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unit"
+            },
+            "earliest": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Earliest"
+            },
+            "latest": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Latest"
+            },
+            "data_age_warning": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Data Age Warning"
+            },
+            "min_amount": {
+              "title": "Min Amount",
+              "type": "number"
+            },
+            "max_amount": {
+              "title": "Max Amount",
+              "type": "number"
+            },
+            "avg_amount": {
+              "title": "Avg Amount",
+              "type": "number"
+            }
+          },
+          "required": [
+            "n_boreholes",
+            "n_measurements",
+            "n_flagged",
+            "unit",
+            "earliest",
+            "latest",
+            "data_age_warning"
+          ],
+          "title": "SourceSummary",
+          "type": "object"
+        },
+        "SourceWaterFound": {
+          "properties": {
+            "plantid": {
+              "title": "Plantid",
+              "type": "integer"
+            },
+            "compoundno": {
+              "title": "Compoundno",
+              "type": "integer"
+            },
+            "found": {
+              "title": "Found",
+              "type": "boolean"
+            },
+            "summary": {
+              "$ref": "#/$defs/SourceSummary"
+            },
+            "per_borehole": {
+              "items": {
+                "$ref": "#/$defs/SourceBorehole"
+              },
+              "title": "Per Borehole",
+              "type": "array"
+            }
+          },
+          "required": [
+            "plantid",
+            "compoundno",
+            "found",
+            "summary",
+            "per_borehole"
+          ],
+          "title": "SourceWaterFound",
+          "type": "object"
+        },
+        "SourceWaterNotFound": {
+          "properties": {
+            "plantid": {
+              "title": "Plantid",
+              "type": "integer"
+            },
+            "compoundno": {
+              "title": "Compoundno",
+              "type": "integer"
+            },
+            "found": {
+              "title": "Found",
+              "type": "boolean"
+            },
+            "note": {
+              "title": "Note",
+              "type": "string"
+            }
+          },
+          "required": [
+            "plantid",
+            "compoundno",
+            "found",
+            "note"
+          ],
+          "title": "SourceWaterNotFound",
+          "type": "object"
+        }
+      },
+      "properties": {
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceWaterFound"
+            },
+            {
+              "$ref": "#/$defs/SourceWaterNotFound"
+            }
+          ],
+          "title": "Result"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "get_source_water_qualityOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_water_level",
+    "description": "Get the groundwater LEVEL (water table) at the boreholes feeding a drinking\n    water plant. This is the height of the water table, NOT water chemistry.\n    Reports each measurement two ways: elevation in metres above mean sea level\n    (the standard hydrogeological datum, DVR90), and depth below the ground\n    surface in metres. Uses resting/natural measurements only (excludes readings\n    taken during pumping) and excludes rejected quality-control records. Returns a\n    plant-level summary (range of water-table elevation across boreholes, date\n    span, data-age warning) plus per-borehole/per-intake detail with the latest\n    value and full historical series. Use this for questions about water level,\n    the water table, groundwater head, or how the water table has changed over time.",
+    "input_schema": {
+      "properties": {
+        "plantid": {
+          "title": "Plantid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "plantid"
+      ],
+      "title": "get_water_levelArguments",
+      "type": "object"
+    },
+    "output_schema": {
+      "$defs": {
+        "WaterLevelBorehole": {
+          "properties": {
+            "boreholeno": {
+              "title": "Boreholeno",
+              "type": "string"
+            },
+            "intakeno": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Intakeno"
+            },
+            "n_measurements": {
+              "title": "N Measurements",
+              "type": "integer"
+            },
+            "latest": {
+              "$ref": "#/$defs/WaterLevelMeasurement"
+            },
+            "series": {
+              "items": {
+                "$ref": "#/$defs/WaterLevelMeasurement"
+              },
+              "title": "Series",
+              "type": "array"
+            }
+          },
+          "required": [
+            "boreholeno",
+            "intakeno",
+            "n_measurements",
+            "latest",
+            "series"
+          ],
+          "title": "WaterLevelBorehole",
+          "type": "object"
+        },
+        "WaterLevelFound": {
+          "properties": {
+            "plantid": {
+              "title": "Plantid",
+              "type": "integer"
+            },
+            "found": {
+              "title": "Found",
+              "type": "boolean"
+            },
+            "convention_note": {
+              "title": "Convention Note",
+              "type": "string"
+            },
+            "summary": {
+              "$ref": "#/$defs/WaterLevelSummary"
+            },
+            "per_borehole": {
+              "items": {
+                "$ref": "#/$defs/WaterLevelBorehole"
+              },
+              "title": "Per Borehole",
+              "type": "array"
+            }
+          },
+          "required": [
+            "plantid",
+            "found",
+            "convention_note",
+            "summary",
+            "per_borehole"
+          ],
+          "title": "WaterLevelFound",
+          "type": "object"
+        },
+        "WaterLevelMeasurement": {
+          "properties": {
+            "date": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date"
+            },
+            "elevation_m_msl": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Elevation M Msl"
+            },
+            "depth_below_ground_m": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Depth Below Ground M"
+            }
+          },
+          "required": [
+            "date",
+            "elevation_m_msl",
+            "depth_below_ground_m"
+          ],
+          "title": "WaterLevelMeasurement",
+          "type": "object"
+        },
+        "WaterLevelNotFound": {
+          "properties": {
+            "plantid": {
+              "title": "Plantid",
+              "type": "integer"
+            },
+            "found": {
+              "title": "Found",
+              "type": "boolean"
+            },
+            "note": {
+              "title": "Note",
+              "type": "string"
+            }
+          },
+          "required": [
+            "plantid",
+            "found",
+            "note"
+          ],
+          "title": "WaterLevelNotFound",
+          "type": "object"
+        },
+        "WaterLevelSummary": {
+          "properties": {
+            "n_boreholes": {
+              "title": "N Boreholes",
+              "type": "integer"
+            },
+            "n_intakes": {
+              "title": "N Intakes",
+              "type": "integer"
+            },
+            "n_measurements": {
+              "title": "N Measurements",
+              "type": "integer"
+            },
+            "earliest": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Earliest"
+            },
+            "latest": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Latest"
+            },
+            "data_age_warning": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Data Age Warning"
+            },
+            "min_elevation_m_msl": {
+              "title": "Min Elevation M Msl",
+              "type": "number"
+            },
+            "max_elevation_m_msl": {
+              "title": "Max Elevation M Msl",
+              "type": "number"
+            },
+            "latest_elevation_m_msl": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Latest Elevation M Msl"
+            },
+            "elevation_range_m": {
+              "title": "Elevation Range M",
+              "type": "number"
+            }
+          },
+          "required": [
+            "n_boreholes",
+            "n_intakes",
+            "n_measurements",
+            "earliest",
+            "latest",
+            "data_age_warning"
+          ],
+          "title": "WaterLevelSummary",
+          "type": "object"
+        }
+      },
+      "properties": {
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WaterLevelFound"
+            },
+            {
+              "$ref": "#/$defs/WaterLevelNotFound"
+            }
+          ],
+          "title": "Result"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "get_water_levelOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_water_quality",
+    "description": "Get recent chemistry measurements at a drinking water plant (treated/tap water).\n    Applies all Jupiter quality filters (qualitycontrol, samplestatus, project, date).\n    Returns measurements with dates, amounts, units, legal limits, and a status flag:\n      OK — measurement within legal limit\n      EXCEEDS_LIMIT — amount exceeds consumer_max\n      NOT_DETECTED — attribute field is non-null (below detection, flagged, or estimated)\n      UNIT_MISMATCH — cannot compare due to differing units",
+    "input_schema": {
+      "properties": {
+        "plantid": {
+          "title": "Plantid",
+          "type": "integer"
+        },
+        "compoundno": {
+          "title": "Compoundno",
+          "type": "integer"
+        },
+        "limit": {
+          "default": 20,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "plantid",
+        "compoundno"
+      ],
+      "title": "get_water_qualityArguments",
+      "type": "object"
+    },
+    "output_schema": {
+      "$defs": {
+        "WaterQualityRow": {
+          "properties": {
+            "plantname": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plantname"
+            },
+            "plantaddress": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plantaddress"
+            },
+            "sampledate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sampledate"
+            },
+            "amount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Amount"
+            },
+            "unit": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unit"
+            },
+            "compound": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Compound"
+            },
+            "attribute": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Attribute"
+            },
+            "detectionlimit": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Detectionlimit"
+            },
+            "legal_limit": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Legal Limit"
+            },
+            "limit_unit": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit Unit"
+            },
+            "status": {
+              "title": "Status",
+              "type": "string"
+            }
+          },
+          "required": [
+            "plantname",
+            "plantaddress",
+            "sampledate",
+            "amount",
+            "unit",
+            "compound",
+            "attribute",
+            "detectionlimit",
+            "legal_limit",
+            "limit_unit",
+            "status"
+          ],
+          "title": "WaterQualityRow",
+          "type": "object"
+        }
+      },
+      "properties": {
+        "result": {
+          "items": {
+            "$ref": "#/$defs/WaterQualityRow"
+          },
+          "title": "Result",
+          "type": "array"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "get_water_qualityOutput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "search_compound",
+    "description": "Resolve a chemical name (English or Danish) to Jupiter compound number(s).\n    Always call this before any chemistry query — never hardcode compound IDs.\n    Compound names in Jupiter are Danish (e.g. 'Nitrat', 'Perfluorerede stoffer').\n    Wildcards (%) are added automatically if omitted.",
+    "input_schema": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "search_compoundArguments",
+      "type": "object"
+    },
+    "output_schema": {
+      "$defs": {
+        "CompoundRow": {
+          "properties": {
+            "compoundno": {
+              "title": "Compoundno",
+              "type": "number"
+            },
+            "long_text": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Long Text"
+            },
+            "short_text": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Short Text"
+            },
+            "casno": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Casno"
+            },
+            "grwunit": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Grwunit"
+            },
+            "drwunit": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Drwunit"
+            }
+          },
+          "required": [
+            "compoundno",
+            "long_text",
+            "short_text",
+            "casno",
+            "grwunit",
+            "drwunit"
+          ],
+          "title": "CompoundRow",
+          "type": "object"
+        }
+      },
+      "properties": {
+        "result": {
+          "items": {
+            "$ref": "#/$defs/CompoundRow"
+          },
+          "title": "Result",
+          "type": "array"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "search_compoundOutput",
+      "type": "object"
+    }
+  }
+]
