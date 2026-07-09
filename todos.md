@@ -17,10 +17,12 @@ Current date 8/6/2026
 - [X] MCP tool : get water quality -- Get recent chemistry (water analysis) measurements at a drinking water plant. (PRIMARY)
 - [X] MCP tool: get legal limit -- Get the official Danish drinking water limit for a compound.
 - [X] Report writing: Introduction Section: Draft introduction 
-- [ ] Claude API Rate limitation: Bring back local model (until new claude subscription) 
-- [ ] Add groundwater 
-- [ ] Report writing: Problem + Data description (finish by 10/6/26)
-- [ ] Report writing: Architecture + Implementation (finish by 14/6/26)
-- [ ] Code evaluation analysis: run the SQL's by Bjarni & Charlotte to confirm LLM performance 
-- [ ] Report writing: Evaluation (finish by 16/6/26)
-- [ ] Report : 
+- [X] Claude API Rate limitation: Bring back local model (until new claude subscription) 
+- [X] Add groundwater 
+- [X] Report writing: Problem + Data description (finish by 10/6/26)
+- [X] Report writing: Architecture + Implementation (finish by 14/6/26)
+- [X] Code evaluation analysis: run the SQL's by Bjarni & Charlotte to confirm LLM performance 
+- [X] Report writing: Evaluation (finish by 16/6/26)
+- [ ] Report : Finalize the draft by 11/07/26
+- [ ] Exam on 24/07/26
+
