@@ -14,7 +14,7 @@ from mcp import ClientSession
 
 
 async def call_mcp_tool(session: ClientSession, name: str, args: dict) -> str:
-    """Invoke a single MCP tool and return its textual result."""
+    #   Invoke a single MCP tool and return its textual result
     result = await session.call_tool(name, args)
     content = result.content
     if isinstance(content, list):
@@ -23,12 +23,12 @@ async def call_mcp_tool(session: ClientSession, name: str, args: dict) -> str:
 
 
 def build_claude_tools(tools_response) -> list[dict]:
-    """Translate the MCP tool list into the Anthropic tool schema.
+    #   Translate the MCP tool list into the Anthropic tool schema.
 
-    The final tool carries a cache_control marker so the entire tool block
-    (which is identical on every call) is cached. Caching covers the prefix in
-    tools -> system -> messages order, so marking the last tool caches all tools.
-    """
+    #   The final tool carries a cache_control marker so the entire tool block
+    #   (which is identical on every call) is cached. Caching covers the prefix in
+    #   tools -> system -> messages order, so marking the last tool caches all tools
+
     tools = [
         {
             "name": tool.name,
@@ -98,6 +98,8 @@ async def run_claude_turn(
         )
 
         # --- accumulate usage (safe if fields are absent) ---
+        # --- Used specifically for the appendix to show how many tokens were spent on each turn
+        # --- Not relevant to the agent's turn logic, but useful for analysis and debugging.
         u = getattr(response, "usage", None)
         if u is not None:
             usage["api_calls"] += 1

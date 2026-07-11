@@ -42,7 +42,6 @@ async def lifespan(app):
     yield
     await pool.close()
 
-
 mcp = FastMCP("jupiter-mcp", lifespan=lifespan)
 
 @mcp.tool(

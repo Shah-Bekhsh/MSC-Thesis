@@ -1,6 +1,6 @@
 """
-Extract the real, auto-generated JSON input schemas for every MCP tool,
-straight from the FastMCP server object — so the appendix reflects ground
+just a tool to extract the real, auto-generated JSON input schemas for every MCP tool,
+straight from the FastMCP server object, so the appendix reflects ground
 truth rather than hand-transcription.
 
 Run from the repo root, in the project environment:

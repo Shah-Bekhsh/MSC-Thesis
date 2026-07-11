@@ -5,19 +5,11 @@ Run with:
     uv run streamlit run src/pg_mcp/app.py
 
 This is a thin presentation layer over the existing MCP architecture. It does
-NOT bypass the MCP server: it launches the same server.py over stdio, lists the
+NOT bypass the MCP server, it launches the same server.py over stdio, lists the
 same tools, and drives the same agent loop (via agent_core.run_claude_turn).
 The only thing new is the front-end — a chat interface in which each answer
 carries a collapsible "reasoning" panel showing the tool calls the agent made,
-plus a standing provenance note.
-
-Design notes:
-- Streamlit reruns this whole script on every interaction. A long-lived async
-  MCP session does not survive that naturally, so we keep one persistent event
-  loop + MCP session alive across reruns using st.cache_resource, and run each
-  turn on that loop with loop.run_until_complete(...).
-- Conversation state (the Anthropic `messages` list and the rendered history)
-  lives in st.session_state so it persists across reruns.
+plus a standing origin note.
 """
 
 import os
@@ -41,24 +33,19 @@ _ASSETS = Path(__file__).parent / "assets"
 
 _SYSTEM_PROMPT_PATH = Path(__file__).parent.parent.parent / "docs" / "system_prompt.md"
 
-
-# --------------------------------------------------------------------------
 # System prompt loading (same extraction logic as the CLI client)
-# --------------------------------------------------------------------------
+
 def load_system_prompt() -> str:
     text = _SYSTEM_PROMPT_PATH.read_text(encoding="utf-8")
     start = text.find("```\n") + 4
     end = text.find("\n```", start)
     return text[start:end].strip()
 
-
-# --------------------------------------------------------------------------
 # Persistent MCP session across Streamlit reruns.
 #
 # We run a dedicated asyncio event loop in a background thread and keep the MCP
 # session open on it for the lifetime of the app. st.cache_resource ensures this
 # is created once and reused on every rerun.
-# --------------------------------------------------------------------------
 class MCPRuntime:
     """Owns a background event loop and a live MCP session."""
 
@@ -108,10 +95,8 @@ def get_runtime() -> MCPRuntime:
 def get_anthropic_client():
     return anthropic.AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-
-# --------------------------------------------------------------------------
 # Page configuration and styling
-# --------------------------------------------------------------------------
+
 st.set_page_config(
     page_title="Jupiter MCP Agent",
     page_icon= _ASSETS / "MCP.ico",
@@ -151,10 +136,7 @@ st.markdown(
 )
 st.write("")
 
-
-# --------------------------------------------------------------------------
 # Session state
-# --------------------------------------------------------------------------
 if "history" not in st.session_state:
     # Rendered conversation: list of {"role", "content", "trace"}
     st.session_state.history = []
@@ -165,10 +147,8 @@ if "messages" not in st.session_state:
 system_prompt = load_system_prompt()
 model = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-6")
 
-
-# --------------------------------------------------------------------------
 # Render the reasoning trace inside a collapsible expander
-# --------------------------------------------------------------------------
+
 def render_trace(trace: list[dict]):
     if not trace:
         return
@@ -196,20 +176,16 @@ PROVENANCE = (
     "measurements and legal limits; it does not provide medical or legal advice."
 )
 
-
-# --------------------------------------------------------------------------
 # Replay existing conversation
-# --------------------------------------------------------------------------
+
 for turn in st.session_state.history:
     with st.chat_message(turn["role"]):
         st.markdown(turn["content"])
         if turn["role"] == "assistant":
             render_trace(turn.get("trace", []))
 
-
-# --------------------------------------------------------------------------
 # Chat input + turn handling
-# --------------------------------------------------------------------------
+
 placeholder = "e.g. What are the nitrate levels in my water at Vesterbrogade 1, Copenhagen?"
 if prompt := st.chat_input(placeholder):
     # Show the user's message immediately
@@ -243,10 +219,8 @@ if prompt := st.chat_input(placeholder):
         {"role": "assistant", "content": answer, "trace": trace}
     )
 
-
-# --------------------------------------------------------------------------
 # Sidebar: about + examples + reset
-# --------------------------------------------------------------------------
+
 with st.sidebar:
     # Institutional logos (DTU + GEUS)
     dtu = _ASSETS / "DTU_logo.png"

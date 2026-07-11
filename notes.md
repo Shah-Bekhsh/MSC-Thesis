@@ -26,3 +26,11 @@ One thing this surfaces, worth noting (not fixing now): seven plants is a lot to
 
 7. In the report, we need to write about the schema of all the tools. Input schema + output schema (Very important)
 
+8. Design notes for streamlit app.
+- Streamlit reruns this whole script on every interaction. A long-lived async
+  MCP session does not survive that naturally, so we keep one persistent event
+  loop + MCP session alive across reruns using st.cache_resource, and run each
+  turn on that loop with loop.run_until_complete(...).
+- Conversation state (the Anthropic `messages` list and the rendered history)
+  lives in st.session_state so it persists across reruns.
+

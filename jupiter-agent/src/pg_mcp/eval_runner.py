@@ -1,18 +1,10 @@
 """
-eval_runner.py — batch evaluation runner for the Jupiter agent.
-
-Reads test cases from a JSON file, runs each case N times through the SAME
-agent path the GUI uses (agent_core.run_claude_turn), and records the answer,
-the tool-call trace, and token usage for every run. Writes results incrementally
-(after each case) so a crash mid-run does not lose completed work.
+batch evaluation runner for the Jupiter agent.
 
 Run from the repo root (jupiter-agent/):
 
     uv run python src/pg_mcp/eval_runner.py --cases docs/eval_cases_guardrail.json
-
-Or drop the JSON anywhere and point --cases at it. Backend is read from
-LLM_BACKEND in the environment (claude or ollama), same as client.py.
-
+    
 Outputs (written next to the cases file, or to --outdir):
     <cases>_results_<timestamp>.json   — full structured results (for analysis)
     <cases>_results_<timestamp>.md     — human-readable summary (for marking pass/fail)
